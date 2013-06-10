@@ -6,11 +6,58 @@
     <groupId>org.fao.fenix</groupId>
     <artifactId>faosyb</artifactId>
     <version>2013</version>
+    <packaging>war</packaging>
+    <properties>
+        <jersey-version>1.17.1</jersey-version>
+    </properties>
     <developers>
         <developer>
             <name>Guido Barbaglia</name>
             <email>guido.barbaglia@gmail.com</email>
         </developer>
     </developers>
-    
+    <distributionManagement>
+        <repository>
+            <id>FENIXAPPS</id>
+            <name>FENIXAPPS-releases</name>
+            <url>http://fenixapps.fao.org/artifactory/fenix-developers</url>
+        </repository>
+        <snapshotRepository>
+            <id>FENIXAPPS</id>
+            <name>FENIXAPPS-snapshots</name>
+            <url>http://fenixapps.fao.org/artifactory/fenix-developers</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-servlet</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+    </dependencies>
 </project>
