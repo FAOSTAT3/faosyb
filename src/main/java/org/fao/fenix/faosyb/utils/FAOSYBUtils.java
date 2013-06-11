@@ -22,6 +22,7 @@
 package org.fao.fenix.faosyb.utils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -69,14 +70,18 @@ public class FAOSYBUtils {
     public String convertToCSV(List<String> l) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < l.size(); i++) {
-            if (i < l.size() - 1) {
-                sb.append("\"").append(l.get(i)).append("\"");
+            sb.append((i == l.size() - 1) ? clean(l.get(i)) : l.get(i));
+            if (i < l.size() - 1)
                 sb.append(",");
-            } else {
-                sb.append(l.get(i));
-            }
         }
         return sb.toString();
+    }
+
+    public Double clean(String v) {
+        v = v.replaceAll("\"", " ").trim();
+        if (v.contains("NA"))
+            return null;
+        return Double.valueOf(v);
     }
 
     /**
@@ -91,6 +96,14 @@ public class FAOSYBUtils {
         return l;
     }
 
+    /**
+     * @param tablename     There are two tables on the db: 'foodsec' and 'others'
+     * @param years         A string passed to the REST, must be in the 'YYYY-YYYY' format
+     * @param indicators    A string passed to the REST, must be in the 'I1,I2,...,In' format
+     * @return              The SQL query
+     *
+     * Create the SQL query to be sent to the DB.
+     */
     public String buildSQL(String tablename, List<Integer> years, List<String> indicators) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ").append(tablename).append(" ");
@@ -108,6 +121,33 @@ public class FAOSYBUtils {
                 sb.append(",");
         }
         sb.append(")");
+        return sb.toString();
+    }
+
+    public String buildCSVHeaders() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("UN Code,");
+        sb.append("Year,");
+        sb.append("Official FAO Name,");
+        sb.append("Variable,");
+        sb.append("Value");
+        sb.append("\n");
+        return sb.toString();
+    }
+
+    public String buildCredits(String version) {
+        StringBuilder sb = new StringBuilder();
+        Date d = new Date();
+        sb.append("Downloaded from the FAO Statistical Year Book ").append(version).append(", ");
+        if (d.getDate() < 10)
+            sb.append("0");
+        sb.append(d.getDate()).append("-");
+        if (d.getMonth() < 10)
+            sb.append("0");
+        sb.append(d.getMonth()).append("-");
+        sb.append(1900 + d.getYear());
+        sb.append(",,\n");
+        sb.append("\n");
         return sb.toString();
     }
 

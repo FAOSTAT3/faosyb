@@ -23,9 +23,12 @@ package org.fao.fenix.faosyb.rest;
 
 import org.fao.fenix.faosyb.datasource.FAOSYB;
 import org.fao.fenix.faosyb.jdbc.JDBCIterable;
+import org.fao.fenix.faosyb.utils.FAOSYBUtils;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
@@ -36,13 +39,12 @@ import java.util.List;
  * @author <a href="mailto:guido.barbaglia@fao.org">Guido Barbaglia</a>
  * @author <a href="mailto:guido.barbaglia@gmail.com">Guido Barbaglia</a>
  */
-@Path("/get")
+@Path("get")
 public class FAOSYBService {
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{version}/{years}/{indicators}")
-    public Response get(@PathParam("version") final String version, @PathParam("years") final String years, @PathParam("indicators") final String indicators) {
+    @Path("{version}/{tablename}/{years}/{indicators}")
+    public Response get(@PathParam("version") final String version, @PathParam("tablename") final String tablename, @PathParam("years") final String years, @PathParam("indicators") final String indicators) {
 
         // Initiate the stream
         StreamingOutput stream = new StreamingOutput() {
@@ -52,10 +54,21 @@ public class FAOSYBService {
 
                 // Initiate utilities
                 Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+                FAOSYBUtils u = new FAOSYBUtils();
+                List<Integer> yearsList = null;
+                List<String> indicatorsList = null;
 
-                // compute result
+                // Parse the parameters
+                try {
+                    yearsList = u.buildYearsList(years);
+                    indicatorsList = u.buildIndicatorsList(indicators);
+                } catch (Exception e) {
+                    streamException(os, ("Method 'get' thrown an error: " + e.getMessage()));
+                }
+
+                // Build the SQL query
+                String sql = u.buildSQL(tablename + "_" + version, yearsList, indicatorsList);
                 JDBCIterable it = new JDBCIterable();
-                String sql = "";
 
                 try {
 
@@ -63,19 +76,16 @@ public class FAOSYBService {
                     it.query(new FAOSYB(), sql);
 
                 } catch (SQLException e) {
-                    streamException(os, ("Method 'getDomains' thrown an error: " + e.getMessage()));
+                    streamException(os, ("Method 'get' thrown an error: " + e.getMessage()));
                 } catch (ClassNotFoundException e) {
-                    streamException(os, ("Method 'getDomains' thrown an error: " + e.getMessage()));
+                    streamException(os, ("Method 'get' thrown an error: " + e.getMessage()));
                 }
 
                 // write the result of the query
+                writer.write(u.buildCredits(version));
+                writer.write(u.buildCSVHeaders());
                 while(it.hasNext()) {
-                    List<String> l = it.next();
-                    for (int i = 0 ; i < l.size() ; i++) {
-                        writer.write(l.get(i));
-                        if (i < l.size() - 1)
-                            writer.write(",");
-                    }
+                    writer.write(u.convertToCSV(it.next()));
                     if (it.hasNext())
                         writer.write("\n");
                 }
@@ -93,6 +103,7 @@ public class FAOSYBService {
         builder.header("Access-Control-Max-Age", "3600");
         builder.header("Access-Control-Allow-Methods", "POST");
         builder.header("Access-Control-Allow-Headers", "X-Requested-With, Host, User-Agent, Accept, Accept-Language, Accept-Encoding, Accept-Charset, Keep-Alive, Connection, Referer,Origin");
+        builder.header("Content-Disposition", "attachment; filename=FAOSYB" + version + ".csv");
 
         // Stream result
         return builder.build();
