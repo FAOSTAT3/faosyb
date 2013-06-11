@@ -24,6 +24,8 @@ public class FAOSYBStepsDefinition {
 
     List<String> csvList;
 
+    List<String> indicatorsList;
+
     String csv;
 
     @Given("^a library of utilities$")
@@ -55,12 +57,21 @@ public class FAOSYBStepsDefinition {
         csvList.add("POP.TOT");
         csvList.add("3456729");
         csv = u.convertToCSV(csvList);
-        System.out.println(csv);
     }
 
     @Then("^I retrieve a CSV string$")
     public void I_retrieve_a_CSV_string() throws Throwable {
         assertTrue(csv.length() > 0);
+    }
+
+    @When("^I send \"([^\"]*)\"$")
+    public void I_send(String indicators) throws Throwable {
+        indicatorsList = u.buildIndicatorsList(indicators);
+    }
+
+    @Then("^I get a list of (\\d+) elements$")
+    public void I_get_a_list_of_elements(int size) throws Throwable {
+        assertEquals(size, indicatorsList.size());
     }
 
 }

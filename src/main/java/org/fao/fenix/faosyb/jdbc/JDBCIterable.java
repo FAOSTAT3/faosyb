@@ -71,8 +71,13 @@ public class JDBCIterable implements Iterator<List<String>> {
         if (this.isHasNext()) {
             l = new ArrayList<String>();
             try {
-                for (int i = 1 ; i <= this.getResultSet().getMetaData().getColumnCount() ; i++)
-                    l.add(this.getResultSet().getString(i).trim());
+                for (int i = 1 ; i <= this.getResultSet().getMetaData().getColumnCount() ; i++) {
+                    try {
+                        l.add(this.getResultSet().getString(i).trim());
+                    } catch (NullPointerException e) {
+                        l.add("NA");
+                    }
+                }
                 this.setHasNext(this.getResultSet().next());
             } catch(SQLException ignored) {
 

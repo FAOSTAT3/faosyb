@@ -61,7 +61,7 @@ public class FAOSYBUtils {
 
     /**
      * @param l A list of values to be converted in the CSV format
-     * @return
+     * @return  A <code>String</code> in the CSV format
      *
      * Converts a list of values in the CSV format. The last element of the list is supposed
      * to be a value and it is not wrapped with quotes.
@@ -76,6 +76,38 @@ public class FAOSYBUtils {
                 sb.append(l.get(i));
             }
         }
+        return sb.toString();
+    }
+
+    /**
+     * @param indicators    A string passed to the REST, must be in the 'I1,I2,...,In' format
+     * @return              A list of indicators
+     */
+    public List<String> buildIndicatorsList(String indicators) {
+        List<String> l = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(indicators, ",");
+        while (st.hasMoreElements())
+            l.add(st.nextElement().toString());
+        return l;
+    }
+
+    public String buildSQL(String tablename, List<Integer> years, List<String> indicators) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM ").append(tablename).append(" ");
+        sb.append("WHERE \"Year\" IN (");
+        for (int i = 0; i < years.size(); i++) {
+            sb.append(years.get(i));
+            if (i < years.size() - 1)
+                sb.append(",");
+        }
+        sb.append(")");
+        sb.append(" AND variable IN (");
+        for (int i = 0; i < indicators.size(); i++) {
+            sb.append("'\"").append(indicators.get(i)).append("\"'");
+            if (i < indicators.size() - 1)
+                sb.append(",");
+        }
+        sb.append(")");
         return sb.toString();
     }
 

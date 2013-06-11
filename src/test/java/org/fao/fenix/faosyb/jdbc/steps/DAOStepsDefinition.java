@@ -21,7 +21,6 @@
  */
 package org.fao.fenix.faosyb.jdbc.steps;
 
-import com.google.gson.Gson;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -29,6 +28,9 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.fao.fenix.faosyb.datasource.FAOSYB;
 import org.fao.fenix.faosyb.jdbc.JDBCIterable;
+import org.fao.fenix.faosyb.utils.FAOSYBUtils;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:guido.barbaglia@fao.org">Guido Barbaglia</a>
@@ -40,28 +42,35 @@ public class DAOStepsDefinition {
 
     JDBCIterable it;
 
-    Gson g;
+    FAOSYBUtils u;
 
     @Given("^a JDBC connection$")
     public void a_JDBC_connection() throws Throwable {
         datasource = new FAOSYB();
+        u = new FAOSYBUtils();
         it = new JDBCIterable();
-        g = new Gson();
         TestCase.assertNotNull(datasource);
+        TestCase.assertNotNull(u);
         TestCase.assertNotNull(it);
-        TestCase.assertNotNull(g);
     }
 
-    @When("^I create the \"([^\"]*)\" table for the year (\\d+)$")
-    public void I_create_the_table_for_the_year(String tablename, int year) throws Throwable {
-        String sql_select = "SELECT * FROM TEST LIMIT 1";
-        it.query(datasource, sql_select);
+    @When("^I pass \"([^\"]*)\", \"([^\"]*)\" and \"([^\"]*)\" as parameters$")
+    public void I_pass_and_as_parameters(String tablename, String years, String indicators) throws Throwable {
+        List<Integer> yearsList = u.buildYearsList(years);
+        List<String> indicatorsList = u.buildIndicatorsList(indicators);
+        String sql = u.buildSQL(tablename, yearsList, indicatorsList);
+        System.out.println(sql);
+        it.query(datasource, sql);
     }
 
-    @Then("^there the DB has a table called \"([^\"]*)\" with (\\d+) columns$")
-    public void there_the_DB_has_a_table_called_with_columns(String tablename, int numberOfColumns) throws Throwable {
-        while (it.hasNext())
-            Assert.assertEquals(numberOfColumns, it.next().size());
+    @Then("^I have an iterator with (\\d+) values$")
+    public void I_have_an_iterator_with_values(int outputSize) throws Throwable {
+        int count = 0;
+        while (it.hasNext()) {
+            it.next();
+            count++;
+        }
+        Assert.assertEquals(outputSize, count);
     }
 
 }

@@ -1,0 +1,5 @@
+# convert files in UTF-8
+iconv -f ISO-8859-15 -t utf-8 DownloadFSILONG.csv > FOODSEC.csv
+
+# copy CSV into DB
+COPY foodsec_2013 FROM '/home/kalimaha/workspace-git/faosyb/src/main/resources/data/FOODSEC.csv' USING DELIMITERS ',' NULL AS 'NA';

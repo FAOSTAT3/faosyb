@@ -14,3 +14,8 @@ Feature: A library of utils to be used by the REST service
     Given a library of utilities
     When  I send a list of elements
     Then  I retrieve a CSV string
+
+  Scenario: Parse the input to create a list of indicators
+    Given a library of utilities
+    When  I send "12,14,28"
+    Then  I get a list of 3 elements
