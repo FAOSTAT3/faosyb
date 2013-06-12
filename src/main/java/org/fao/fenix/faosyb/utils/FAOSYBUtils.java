@@ -77,11 +77,11 @@ public class FAOSYBUtils {
         return sb.toString();
     }
 
-    public Double clean(String v) {
+    public String clean(String v) {
         v = v.replaceAll("\"", " ").trim();
         if (v.contains("NA"))
-            return null;
-        return Double.valueOf(v);
+            return "NA";
+        return String.valueOf(Double.valueOf(v));
     }
 
     /**
@@ -106,7 +106,8 @@ public class FAOSYBUtils {
      */
     public String buildSQL(String tablename, List<Integer> years, List<String> indicators) {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT * FROM ").append(tablename).append(" ");
+        sb.append("SELECT un_code, \"Year\", substring(official_fao_name from 2 for (length(official_fao_name) - 2)), series_name, value ");
+        sb.append("FROM ").append(tablename).append(", labels ");
         sb.append("WHERE \"Year\" IN (");
         for (int i = 0; i < years.size(); i++) {
             sb.append(years.get(i));
@@ -120,7 +121,38 @@ public class FAOSYBUtils {
             if (i < indicators.size() - 1)
                 sb.append(",");
         }
-        sb.append(")");
+        sb.append(") ");
+        sb.append("AND un_code IN (SELECT un_code FROM ").append(tablename).append(" WHERE \"Year\" IN (");
+        for (int i = 0; i < years.size(); i++) {
+            sb.append(years.get(i));
+            if (i < years.size() - 1)
+                sb.append(",");
+        }
+        sb.append(") AND variable IN (");
+        for (int i = 0; i < indicators.size(); i++) {
+            sb.append("'\"").append(indicators.get(i)).append("\"'");
+            if (i < indicators.size() - 1)
+                sb.append(",");
+        }
+        sb.append(") ");
+        sb.append("GROUP BY un_code HAVING count(*) = ").append(years.size() * indicators.size()).append(") ");
+        sb.append("AND variable = ('\"' || data_key || '\"')");
+        sb.append("ORDER BY official_fao_name, \"Year\", variable");
+        System.out.println(sb);
+        return sb.toString();
+    }
+
+    public String buildCSVHeadersWide(List<String> indicators) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("UN Code,");
+        sb.append("Year,");
+        sb.append("Official FAO Name,");
+        for (int i = 0; i < indicators.size(); i++) {
+            sb.append(indicators.get(i));
+            if (i < indicators.size() - 1)
+                sb.append(",");
+        }
+        sb.append("\n");
         return sb.toString();
     }
 

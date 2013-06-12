@@ -25,10 +25,8 @@ import org.fao.fenix.faosyb.datasource.FAOSYB;
 import org.fao.fenix.faosyb.jdbc.JDBCIterable;
 import org.fao.fenix.faosyb.utils.FAOSYBUtils;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
@@ -44,6 +42,7 @@ public class FAOSYBService {
 
     @GET
     @Path("{version}/{tablename}/{years}/{indicators}")
+    @Produces(MediaType.TEXT_PLAIN)
     public Response get(@PathParam("version") final String version, @PathParam("tablename") final String tablename, @PathParam("years") final String years, @PathParam("indicators") final String indicators) {
 
         // Initiate the stream
@@ -83,7 +82,7 @@ public class FAOSYBService {
 
                 // write the result of the query
                 writer.write(u.buildCredits(version));
-                writer.write(u.buildCSVHeaders());
+                writer.write(u.buildCSVHeadersWide(indicatorsList));
                 while(it.hasNext()) {
                     writer.write(u.convertToCSV(it.next()));
                     if (it.hasNext())
@@ -103,7 +102,7 @@ public class FAOSYBService {
         builder.header("Access-Control-Max-Age", "3600");
         builder.header("Access-Control-Allow-Methods", "POST");
         builder.header("Access-Control-Allow-Headers", "X-Requested-With, Host, User-Agent, Accept, Accept-Language, Accept-Encoding, Accept-Charset, Keep-Alive, Connection, Referer,Origin");
-        builder.header("Content-Disposition", "attachment; filename=FAOSYB" + version + ".csv");
+//        builder.header("Content-Disposition", "attachment; filename=FAOSYB" + version + ".csv");
 
         // Stream result
         return builder.build();
