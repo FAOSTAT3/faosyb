@@ -6,6 +6,7 @@ Feature: The system stores and retrieve data from a PostgreSQL DBMS.
     Then  I have an iterator with <size> values
 
     Examples: Feed different combination of parameters to test the DAO
-    | tablename      | years       | indicators        | size |
-    | "foodsec_2013" | "2010-2012" | "DA.DET.AV.IN.NO" | 756  |
-    | "others_2013"  | "2010-2012" | "SP.POP.TOTL"     | 275  |
+    | tablename      | years       | indicators                        | size  |
+    | "foodsec_2013" | "2010-2012" | "DA.DET.AV.IN.NO"                 | 756   |
+    | "foodsec_2013" | "2010-2012" | "DA.DET.AV.IN.NO,DA.DET.PS.GR.NO" | 1512  |
+    | "others_2013"  | "2010-2012" | "SP.POP.TOTL"                     | 275   |
