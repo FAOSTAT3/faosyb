@@ -21,6 +21,10 @@
  */
 package org.fao.fenix.faosyb.utils;
 
+import org.fao.fenix.faosyb.datasource.FAOSYB;
+import org.fao.fenix.faosyb.jdbc.JDBCIterable;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +35,42 @@ import java.util.StringTokenizer;
  * @author <a href="mailto:guido.barbaglia@gmail.com">Guido Barbaglia</a>
  */
 public class FAOSYBUtils {
+
+    public List<List<String>> buildWideTable(List<List<String>> l, List<Integer> years, List<String> indicators) {
+        List<List<String>> w = new ArrayList<List<String>>();
+        List<String> row = new ArrayList<String>();
+        for (int i = 0; i < l.size(); i++) {
+            String tmp = l.get(i).get(4);
+            tmp = tmp.contains("NA") ? "NA" : tmp.replaceAll("\"", " ").trim();
+            row.add(tmp);
+            if ((i-1) % indicators.size() == 0) {
+//                row.add(0, l.get(i).get(0));
+                row.add(0, l.get(i).get(2));
+                row.add(0, l.get(i).get(1));
+                row.add(0, l.get(i).get(0));
+                w.add(row);
+                row = new ArrayList<String>();
+            }
+        }
+        return w;
+    }
+
+    public List<String> buildLabelsList(List<List<String>> l) {
+        List<String> out = new ArrayList<String>();
+        for (List<String> row : l)
+            if (!out.contains(row.get(3)))
+                out.add(row.get(3));
+        return out;
+    }
+
+    public List<List<String>> buildLongTable(String sql) throws SQLException, ClassNotFoundException {
+        List<List<String>> l = new ArrayList<List<String>>();
+        JDBCIterable it = new JDBCIterable();
+        it.query(new FAOSYB(), sql);
+        while (it.hasNext())
+            l.add(it.next());
+        return l;
+    }
 
     /**
      * @param years         A string passed to the REST, must be in the 'YYYY-YYYY' format
@@ -74,6 +114,7 @@ public class FAOSYBUtils {
             if (i < l.size() - 1)
                 sb.append(",");
         }
+        sb.append("\n");
         return sb.toString();
     }
 
@@ -138,7 +179,6 @@ public class FAOSYBUtils {
         sb.append("GROUP BY un_code HAVING count(*) = ").append(years.size() * indicators.size()).append(") ");
         sb.append("AND variable = ('\"' || data_key || '\"')");
         sb.append("ORDER BY official_fao_name, \"Year\", variable");
-        System.out.println(sb);
         return sb.toString();
     }
 
@@ -181,6 +221,19 @@ public class FAOSYBUtils {
         sb.append(",,\n");
         sb.append("\n");
         return sb.toString();
+    }
+
+    public void print(List<List<String>> l) {
+        for (int i = 0; i < l.size(); i++) {
+            List<String> strings =  l.get(i);
+            for (int j = 0; j < strings.size(); j++) {
+                String s =  strings.get(j);
+                System.out.print(s);
+                if (j < strings.size() - 1)
+                    System.out.print(", ");
+            }
+            System.out.println();
+        }
     }
 
 }
