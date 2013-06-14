@@ -3,3 +3,8 @@ iconv -f ISO-8859-15 -t utf-8 DownloadFSILONG.csv > FOODSEC.csv
 
 # copy CSV into DB
 COPY foodsec_2013 FROM '/home/kalimaha/workspace-git/faosyb/src/main/resources/data/FOODSEC.csv' USING DELIMITERS ',' NULL AS 'NA';
+
+# PROBLEMS
+http://ldvapp07.fao.org:8032/faosyb/rest/get/2013/others/1990-2009/RL.AREA.AGR.HA.SH,RL.AREA.FOR.HA.SH,RL.AREA.OTH.HA.SH
+http://localhost:8080/faosyb/rest/get/2013/others/1990-2009/RL.AREA.AGR.HA.SH,RL.AREA.FOR.HA.SH,RL.AREA.OTH.HA.SH
+SELECT un_code, "Year", official_fao_name, series_name, value FROM others_2013, labels WHERE "Year" IN (1990,1991) AND variable IN ('"RL.AREA.AGR.HA.SH"','"RL.AREA.FOR.HA.SH"','"RL.AREA.OTH.HA.SH"') AND un_code IN (SELECT un_code FROM others_2013 WHERE "Year" IN (1990,1991) AND variable IN ('"RL.AREA.AGR.HA.SH"','"RL.AREA.FOR.HA.SH"','"RL.AREA.OTH.HA.SH"') GROUP BY un_code HAVING count(*) = 6) AND variable = ('"' || data_key || '"')ORDER BY official_fao_name, "Year", variable

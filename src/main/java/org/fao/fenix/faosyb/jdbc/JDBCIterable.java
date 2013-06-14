@@ -58,6 +58,14 @@ public class JDBCIterable implements Iterator<List<String>> {
         this.setResultSet(this.getStatement().getResultSet());
     }
 
+    public void insert(DATASOURCE datasource, String sql) throws ClassNotFoundException, SQLException {
+        Class.forName("org.postgresql.Driver");
+        this.setConnection(DriverManager.getConnection(datasource.getUrl(), datasource.getUsername(), datasource.getPassword()));
+        this.setStatement(this.getConnection().createStatement());
+        this.getStatement().executeUpdate(sql);
+        this.setResultSet(this.getStatement().getResultSet());
+    }
+
     @Override
     public boolean hasNext() {
         return this.isHasNext();

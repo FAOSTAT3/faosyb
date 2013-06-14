@@ -21,16 +21,17 @@
  */
 package org.fao.fenix.faosyb.rest;
 
+import org.fao.fenix.faosyb.datasource.FAOSYB;
+import org.fao.fenix.faosyb.jdbc.JDBCIterable;
 import org.fao.fenix.faosyb.utils.FAOSYBUtils;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,6 +62,7 @@ public class FAOSYBService {
                 try {
                     yearsList = u.buildYearsList(years);
                     indicatorsList = u.buildIndicatorsList(indicators);
+                    Collections.sort(indicatorsList);
                 } catch (Exception e) {
                     streamException(os, ("Method 'get' thrown an error: " + e.getMessage()));
                 }
@@ -81,6 +83,7 @@ public class FAOSYBService {
                 }
 
                 List<String> labels = u.buildLabelsList(l);
+                Collections.sort(indicatorsList);
                 List<List<String>> w = u.buildWideTable(l, yearsList, indicatorsList);
 
                 // write the result of the query
@@ -91,6 +94,17 @@ public class FAOSYBService {
 
                 // Convert and write the output on the stream
                 writer.flush();
+
+                // Record Statistics
+                String statisticsSQL = u.buildStatisticsSQL(version, tablename, years, indicatorsList);
+                JDBCIterable i = new JDBCIterable();
+                try {
+                    i.insert(new FAOSYB(), statisticsSQL);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
 
             }
 

@@ -9,4 +9,4 @@ Feature: The system stores and retrieve data from a PostgreSQL DBMS.
     | tablename      | years       | indicators                        | size  |
     | "foodsec_2013" | "2010-2012" | "DA.DET.AV.IN.NO"                 | 756   |
     | "foodsec_2013" | "2010-2012" | "DA.DET.AV.IN.NO,DA.DET.PS.GR.NO" | 1512  |
-    | "others_2013"  | "2010-2012" | "SP.POP.TOTL"                     | 275   |
+    | "others_2013"  | "2010-2012" | "SP.POP.TOTL"                     | 501   |

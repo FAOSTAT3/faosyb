@@ -36,18 +36,30 @@ import java.util.StringTokenizer;
  */
 public class FAOSYBUtils {
 
+    public String buildStatisticsSQL(String version, String tablename, String years, List<String> indicators) {
+        StringBuilder sbi = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < indicators.size(); i++) {
+            sbi.append(indicators.get(i));
+            if (i < indicators.size() - 1)
+                sbi.append(",");
+        }
+        sb.append("INSERT INTO statistics VALUES('" + version + "', '" + tablename + "', '" + years + "', '" + sbi.toString() + "')");
+        return sb.toString();
+
+    }
+
     public List<List<String>> buildWideTable(List<List<String>> l, List<Integer> years, List<String> indicators) {
         List<List<String>> w = new ArrayList<List<String>>();
         List<String> row = new ArrayList<String>();
-        for (int i = 0; i < l.size(); i++) {
-            String tmp = l.get(i).get(4);
+        for (int i = 1; i <= l.size(); i++) {
+            String tmp = l.get(i - 1).get(4);
             tmp = tmp.contains("NA") ? "NA" : tmp.replaceAll("\"", " ").trim();
             row.add(tmp);
-            if ((i-1) % indicators.size() == 0) {
-//                row.add(0, l.get(i).get(0));
-                row.add(0, l.get(i).get(2));
-                row.add(0, l.get(i).get(1));
-                row.add(0, l.get(i).get(0));
+            if (i % indicators.size() == 0) {
+                row.add(0, l.get(i - 1).get(2));
+                row.add(0, l.get(i- 1).get(1));
+                row.add(0, l.get(i - 1).get(0));
                 w.add(row);
                 row = new ArrayList<String>();
             }
@@ -120,9 +132,11 @@ public class FAOSYBUtils {
 
     public String clean(String v) {
         v = v.replaceAll("\"", " ").trim();
-        if (v.contains("NA"))
+        if (v.contains("NA")) {
             return "NA";
-        return String.valueOf(Double.valueOf(v));
+        } else {
+            return v;
+        }
     }
 
     /**
@@ -147,7 +161,8 @@ public class FAOSYBUtils {
      */
     public String buildSQL(String tablename, List<Integer> years, List<String> indicators) {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT un_code, \"Year\", substring(official_fao_name from 2 for (length(official_fao_name) - 2)), series_name, value ");
+//        sb.append("SELECT un_code, \"Year\", substring(official_fao_name from 2 for (length(official_fao_name) - 2)), series_name, value ");
+        sb.append("SELECT un_code, \"Year\", official_fao_name, series_name, value ");
         sb.append("FROM ").append(tablename).append(", labels ");
         sb.append("WHERE \"Year\" IN (");
         for (int i = 0; i < years.size(); i++) {
